@@ -29,6 +29,7 @@
           <div>
             <button onclick="login()">Login</button>
             <button onclick="getDashboard()">Get Dashboard</button>
+            <button onclick="getSettings()"> Get Settings</button>
           </div>
         </main>
       
@@ -61,12 +62,51 @@
             }
         }).then((res) => {
               if (res && res.data && res.data.success) {
+                history.pushState(null, null, "dashboard");
                 document.querySelector("h1.row").innerHTML = "Dashboard";
                 document.querySelector("main").innerHTML = res.data.myContent;
               }
             });
         }
+      
+        function getSettings() {
+          
+          const token = localStorage.getItem("jwt");
+          axios
+            .get("/api/settings", {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            })
+            .then((res) => {
+              if (res && res.data && res.data.success) {
+                history.pushState(null,null,"settings");
+                document.querySelector("h1.row").innerHTML = "Settings";
+                document.querySelector("main").innerHTML = res.data.myContent;
+              }
+            });
+        }
+      var tokenActivation = 1;
+      setInterval(function () {
+        const token = localStorage.getItem("jwt");
+        if (token != null) {
+          // decoding the token to fetch the jwt expiration time
+          var exp = JSON.parse(atob(token.split('.')[1])).exp;
+          if (new Date().getTime() > exp * 1000) {
+            tokenActivation=0;
+            alert("Session has expired, Please Login");
+            localStorage.clear();
+            window.location.replace("http://localhost:3000/");
+          }
 
+          // Alerting the user about token expiration in advance of 30 seconds 
+          if (tokenActivation==1 && new Date().getTime() + 30000 > exp * 1000) {
+            tokenActivation=0;
+            alert("Session will get expire in 30 seconds");
+          }
+        }
+      }, 2000);
+      
 </script>
 
 </body>
